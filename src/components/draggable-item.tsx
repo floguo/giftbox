@@ -61,9 +61,9 @@ export const DraggableItem: React.FC<DraggableItemProps> = ({
         return <SpotifyPlayer spotifyUrl={item.content as string} />
       case 'doodle':
         return (
-          <object 
-            data={item.content as string} 
-            type="image/svg+xml"
+          <img 
+            src={item.content as string}
+            alt="Doodle"
             className="w-48 h-48 pointer-events-none" 
           />
         )
@@ -108,4 +108,3 @@ export const DraggableItem: React.FC<DraggableItemProps> = ({
     </div>
   )
 }
-

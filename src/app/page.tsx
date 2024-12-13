@@ -9,6 +9,8 @@ import { PhotoUploader } from '@/components/photo-uploader'
 import { VoiceRecorder } from '@/components/voice-recorder'
 import { DoodleDrawer } from '@/components/doodle-drawer'
 import { DottedBackground } from '@/components/dotted-background'
+import html2canvas from 'html2canvas'
+import { Download } from 'lucide-react'
 // import { SpotifyPlayer } from '@/components/spotify-player'
 
 export interface LetterItem {
@@ -60,7 +62,7 @@ export default function DigitalLetterComposer() {
     const rect = (e.target as HTMLElement).getBoundingClientRect()
     const offsetX = position.clientX - rect.left
     const offsetY = position.clientY - rect.top
-    
+
     setIsDragging(true)
     setCurrentItem({
       ...item,
@@ -75,7 +77,7 @@ export default function DigitalLetterComposer() {
 
   const handleDragMove = (e: React.MouseEvent | React.TouchEvent) => {
     if (!isDragging || !currentItem || !canvasRef.current) return
-    
+
     const position = 'touches' in e ? e.touches[0] : e
     const rect = canvasRef.current.getBoundingClientRect()
     const x = position.clientX - rect.left - (currentItem as any).offsetX
@@ -128,11 +130,47 @@ export default function DigitalLetterComposer() {
     return `https://yourdomain.com/gift/${uniqueId}`
   }
 
+  const exportAsImage = async () => {
+    if (canvasRef.current) {
+      // Get the export button element
+      const exportButton = document.querySelector('.export-button')
+      if (exportButton) {
+        // Hide the button
+        exportButton.classList.add('hidden')
+      }
+
+      const canvas = await html2canvas(canvasRef.current, {
+        allowTaint: true,
+        useCORS: true,
+        foreignObjectRendering: true,
+        onclone: (clonedDoc) => {
+          // Force all SVGs to be rendered before capturing
+          const svgs = clonedDoc.getElementsByTagName('svg')
+          Array.from(svgs).forEach(svg => {
+            svg.setAttribute('width', svg.getBoundingClientRect().width.toString())
+            svg.setAttribute('height', svg.getBoundingClientRect().height.toString())
+          })
+        }
+      })
+
+      // Show the button again
+      if (exportButton) {
+        exportButton.classList.remove('hidden')
+      }
+
+      const image = canvas.toDataURL('image/png', 1.0)
+      const link = document.createElement('a')
+      link.href = image
+      link.download = `digital-letter-${Date.now()}.png`
+      link.click()
+    }
+  }
+
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="h-screen overflow-hidden bg-stone-200 flex flex-col relative">
         <DottedBackground />
-        <main 
+        <main
           className="flex-1 relative overflow-hidden z-20"
           ref={canvasRef}
           onMouseMove={handleDragMove}
@@ -141,8 +179,8 @@ export default function DigitalLetterComposer() {
           onTouchEnd={handleDragEnd}
           onMouseLeave={handleDragEnd}
         >
-          <LetterCanvas 
-            items={items} 
+          <LetterCanvas
+            items={items}
             updateItemPosition={updateItemPosition}
             updateItemContent={updateItemContent}
             deleteItem={deleteItem}
@@ -150,6 +188,14 @@ export default function DigitalLetterComposer() {
             isDragging={isDragging}
             currentItem={currentItem}
           />
+          <div className="absolute top-4 right-4 flex gap-2 z-10">
+            <button
+              onClick={exportAsImage}
+              className="export-button bg-stone-500 text-[#262626] hover:bg-stone-400 text-white p-2 rounded-lg shadow transition-colors font-bold"
+            >
+              <Download />
+            </button>
+          </div>
         </main>
         <div className="absolute bottom-0 left-0 right-0 z-30">
           <Toolbar
@@ -204,4 +250,3 @@ export default function DigitalLetterComposer() {
     </DndProvider>
   )
 }
-
