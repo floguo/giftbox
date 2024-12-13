@@ -91,23 +91,36 @@ export const DoodleDrawer: React.FC<DoodleDrawerProps> = ({ onClose, onDoodleAdd
     const svg = svgRef.current
     if (!svg) return
 
-    // Clone the SVG to remove event listeners and refs
-    const clonedSvg = svg.cloneNode(true) as SVGSVGElement
-    
-    // Calculate the viewBox based on the SVG's dimensions
-    const rect = svg.getBoundingClientRect()
-    clonedSvg.setAttribute('viewBox', `0 0 ${rect.width} ${rect.height}`)
-    clonedSvg.setAttribute('width', '100%')
-    clonedSvg.setAttribute('height', '100%')
-    clonedSvg.style.backgroundColor = 'transparent'
-    
-    // Convert to string
-    const svgData = new XMLSerializer().serializeToString(clonedSvg)
-    const svgBlob = new Blob([svgData], { type: 'image/svg+xml' })
-    const svgUrl = URL.createObjectURL(svgBlob)
-    
-    onDoodleAdd(svgUrl)
-    onClose()
+    // Create a new SVG with the paths
+    const svgContent = `
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${svg.clientWidth} ${svg.clientHeight}">
+        ${paths.map(path => `<path d="${path}" stroke="${color}" stroke-width="${lineWidth}" fill="none" />`).join('')}
+      </svg>
+    `
+
+    // Convert SVG to base64 data URL
+    const blob = new Blob([svgContent], { type: 'image/svg+xml' })
+    const reader = new FileReader()
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        // Convert SVG to PNG using canvas
+        const img = new Image()
+        img.onload = () => {
+          const canvas = document.createElement('canvas')
+          canvas.width = svg.clientWidth
+          canvas.height = svg.clientHeight
+          const ctx = canvas.getContext('2d')
+          if (ctx) {
+            ctx.drawImage(img, 0, 0)
+            const pngUrl = canvas.toDataURL('image/png')
+            onDoodleAdd(pngUrl)
+            onClose()
+          }
+        }
+        img.src = reader.result
+      }
+    }
+    reader.readAsDataURL(blob)
   }
 
   return (
@@ -206,4 +219,3 @@ export const DoodleDrawer: React.FC<DoodleDrawerProps> = ({ onClose, onDoodleAdd
     </Dialog>
   )
 }
-
