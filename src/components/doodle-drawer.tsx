@@ -1,114 +1,193 @@
-import React, { useState, useRef } from 'react'
-import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Eraser, Pencil } from 'lucide-react'
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { useMutation } from "@tanstack/react-query";
+import { upload } from "@vercel/blob/client";
+import { Eraser, Pencil } from "lucide-react";
+import React, { useRef, useState } from "react";
+import { useAppContext } from "./AppContext";
 
 interface DoodleDrawerProps {
-  onClose: () => void
-  onDoodleAdd: (doodleUrl: string) => void
+  onClose: () => void;
+  onDoodleAdd: (doodleUrl: string) => void;
 }
 
 const colors = [
-  '#000000', // Black
-  '#4B5563', // Gray
-  '#EF4444', // Red
-  '#F59E0B', // Orange
-  '#10B981', // Green
-  '#3B82F6', // Blue
-  '#8B5CF6', // Purple
-  '#EC4899', // Pink
-]
+  "#000000", // Black
+  "#4B5563", // Gray
+  "#EF4444", // Red
+  "#F59E0B", // Orange
+  "#10B981", // Green
+  "#3B82F6", // Blue
+  "#8B5CF6", // Purple
+  "#EC4899", // Pink
+];
 
-export const DoodleDrawer: React.FC<DoodleDrawerProps> = ({ onClose, onDoodleAdd }) => {
-  const svgRef = useRef<SVGSVGElement>(null)
-  const [isDrawing, setIsDrawing] = useState(false)
-  const [color, setColor] = useState('#000000')
-  const [lineWidth, setLineWidth] = useState(5)
-  const [isErasing, setIsErasing] = useState(false)
-  const [paths, setPaths] = useState<string[]>([])
-  const [currentPath, setCurrentPath] = useState<string>('')
-  const pointsRef = useRef<{ x: number; y: number }[]>([])
+export const DoodleDrawer: React.FC<DoodleDrawerProps> = ({
+  onClose,
+  onDoodleAdd,
+}) => {
+  const { giftId } = useAppContext();
+  const svgRef = useRef<SVGSVGElement>(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [color, setColor] = useState("#000000");
+  const [lineWidth, setLineWidth] = useState(5);
+  const [isErasing, setIsErasing] = useState(false);
+  const [paths, setPaths] = useState<string[]>([]);
+  const [currentPath, setCurrentPath] = useState<string>("");
+  const pointsRef = useRef<{ x: number; y: number }[]>([]);
 
   const getCoordinates = (e: React.MouseEvent<SVGSVGElement>) => {
-    const svg = svgRef.current
-    if (!svg) return { x: 0, y: 0 }
+    const svg = svgRef.current;
+    if (!svg) return { x: 0, y: 0 };
 
-    const point = svg.createSVGPoint()
-    point.x = e.clientX
-    point.y = e.clientY
-    const transformedPoint = point.matrixTransform(svg.getScreenCTM()?.inverse())
-    
+    const point = svg.createSVGPoint();
+    point.x = e.clientX;
+    point.y = e.clientY;
+    const transformedPoint = point.matrixTransform(
+      svg.getScreenCTM()?.inverse()
+    );
+
     return {
       x: transformedPoint.x,
-      y: transformedPoint.y
-    }
-  }
+      y: transformedPoint.y,
+    };
+  };
 
   const startDrawing = (e: React.MouseEvent<SVGSVGElement>) => {
-    const point = getCoordinates(e)
-    pointsRef.current = [point]
-    setCurrentPath(`M ${point.x} ${point.y}`)
-    setIsDrawing(true)
-  }
+    const point = getCoordinates(e);
+    pointsRef.current = [point];
+    setCurrentPath(`M ${point.x} ${point.y}`);
+    setIsDrawing(true);
+  };
 
   const draw = (e: React.MouseEvent<SVGSVGElement>) => {
-    if (!isDrawing) return
+    if (!isDrawing) return;
 
-    const point = getCoordinates(e)
-    pointsRef.current.push(point)
+    const point = getCoordinates(e);
+    pointsRef.current.push(point);
 
     if (pointsRef.current.length > 3) {
-      const points = pointsRef.current
-      const lastPoint = points[points.length - 1]
-      const controlPoint = points[points.length - 2]
+      const points = pointsRef.current;
+      const lastPoint = points[points.length - 1];
+      const controlPoint = points[points.length - 2];
       const endPoint = {
         x: (controlPoint.x + lastPoint.x) / 2,
-        y: (controlPoint.y + lastPoint.y) / 2
-      }
+        y: (controlPoint.y + lastPoint.y) / 2,
+      };
 
-      setCurrentPath(prev => 
-        `${prev} Q ${controlPoint.x} ${controlPoint.y}, ${endPoint.x} ${endPoint.y}`
-      )
+      setCurrentPath(
+        (prev) =>
+          `${prev} Q ${controlPoint.x} ${controlPoint.y}, ${endPoint.x} ${endPoint.y}`
+      );
     }
-  }
+  };
 
   const stopDrawing = () => {
     if (currentPath) {
-      setPaths(prev => [...prev, currentPath])
-      setCurrentPath('')
+      setPaths((prev) => [...prev, currentPath]);
+      setCurrentPath("");
     }
-    setIsDrawing(false)
-    pointsRef.current = []
-  }
+    setIsDrawing(false);
+    pointsRef.current = [];
+  };
 
   const clearCanvas = () => {
-    setPaths([])
-    setCurrentPath('')
-  }
+    setPaths([]);
+    setCurrentPath("");
+  };
 
-  const saveDoodle = () => {
-    const svg = svgRef.current
-    if (!svg) return
+  const saveDoodle = useMutation({
+    mutationFn: async () => {
+      const svg = svgRef.current;
+      if (!svg) throw new Error("SVG ref is null");
 
-    // Clone the SVG to remove event listeners and refs
-    const clonedSvg = svg.cloneNode(true) as SVGSVGElement
-    
-    // Calculate the viewBox based on the SVG's dimensions
-    const rect = svg.getBoundingClientRect()
-    clonedSvg.setAttribute('viewBox', `0 0 ${rect.width} ${rect.height}`)
-    clonedSvg.setAttribute('width', '100%')
-    clonedSvg.setAttribute('height', '100%')
-    clonedSvg.style.backgroundColor = 'transparent'
-    
-    // Convert to string
-    const svgData = new XMLSerializer().serializeToString(clonedSvg)
-    const svgBlob = new Blob([svgData], { type: 'image/svg+xml' })
-    const svgUrl = URL.createObjectURL(svgBlob)
-    
-    onDoodleAdd(svgUrl)
-    onClose()
-  }
+      // Target dimensions (max size in the letter canvas)
+      const TARGET_SIZE = 192;
+      const viewBox = svg.viewBox.baseVal;
+      const aspectRatio = viewBox.width / viewBox.height;
+
+      // Calculate dimensions that maintain aspect ratio within TARGET_SIZE
+      let width, height;
+      if (aspectRatio > 1) {
+        // Wider than tall
+        width = TARGET_SIZE;
+        height = TARGET_SIZE / aspectRatio;
+      } else {
+        // Taller than wide
+        height = TARGET_SIZE;
+        width = TARGET_SIZE * aspectRatio;
+      }
+
+      // Create a canvas element with the calculated dimensions
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+      if (!ctx) throw new Error("Failed to get canvas context");
+
+      // Create a Blob from the SVG with correct viewBox
+      const svgData = `
+        <svg width="${width}" height="${height}" 
+             viewBox="${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}"
+             xmlns="http://www.w3.org/2000/svg">
+          ${svg.innerHTML}
+        </svg>
+      `;
+      const svgBlob = new Blob([svgData], { type: "image/svg+xml" });
+      const svgUrl = URL.createObjectURL(svgBlob);
+
+      // Create an image from the SVG and draw it to canvas
+      const img = new Image();
+      await new Promise((resolve) => {
+        img.onload = resolve;
+        img.src = svgUrl;
+      });
+
+      ctx.clearRect(0, 0, width, height);
+      ctx.drawImage(img, 0, 0, width, height);
+
+      // Convert canvas to PNG blob
+      const pngBlob = await new Promise<Blob | null>((resolve) => {
+        canvas.toBlob(resolve, "image/png");
+      });
+
+      if (!pngBlob) {
+        throw new Error("Failed to create PNG blob");
+      }
+
+      const file = new File([pngBlob], `doodle-${Date.now()}.png`, {
+        type: "image/png",
+      });
+
+      // Upload the file
+      const response = await upload(`${giftId}/${file.name}`, file, {
+        access: "public",
+        handleUploadUrl: "/api/upload",
+      });
+
+      URL.revokeObjectURL(svgUrl);
+      return response.url;
+    },
+    onSuccess: (url: string) => {
+      if (url) {
+        onDoodleAdd(url);
+        onClose();
+      }
+    },
+    onError: (error) => {
+      console.error("Error uploading doodle:", error);
+    },
+  });
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
@@ -132,7 +211,7 @@ export const DoodleDrawer: React.FC<DoodleDrawerProps> = ({ onClose, onDoodleAdd
                 <path
                   key={i}
                   d={path}
-                  stroke={isErasing ? 'white' : color}
+                  stroke={isErasing ? "white" : color}
                   strokeWidth={lineWidth}
                   fill="none"
                   strokeLinecap="round"
@@ -142,7 +221,7 @@ export const DoodleDrawer: React.FC<DoodleDrawerProps> = ({ onClose, onDoodleAdd
               {currentPath && (
                 <path
                   d={currentPath}
-                  stroke={isErasing ? 'white' : color}
+                  stroke={isErasing ? "white" : color}
                   strokeWidth={lineWidth}
                   fill="none"
                   strokeLinecap="round"
@@ -155,7 +234,7 @@ export const DoodleDrawer: React.FC<DoodleDrawerProps> = ({ onClose, onDoodleAdd
             <Popover>
               <PopoverTrigger asChild>
                 <div className="relative w-10 h-10 group cursor-pointer">
-                  <div 
+                  <div
                     className="w-10 h-10 rounded-full border-2 border-stone-200 transition-transform group-hover:scale-110 shadow-sm"
                     style={{ backgroundColor: color }}
                   />
@@ -167,7 +246,7 @@ export const DoodleDrawer: React.FC<DoodleDrawerProps> = ({ onClose, onDoodleAdd
                     <button
                       key={c}
                       className={`w-8 h-8 rounded-full border-2 transition-transform hover:scale-110 ${
-                        c === color ? 'border-stone-900' : 'border-stone-200'
+                        c === color ? "border-stone-900" : "border-stone-200"
                       }`}
                       style={{ backgroundColor: c }}
                       onClick={() => setColor(c)}
@@ -194,16 +273,24 @@ export const DoodleDrawer: React.FC<DoodleDrawerProps> = ({ onClose, onDoodleAdd
               size="icon"
               onClick={() => setIsErasing(!isErasing)}
             >
-              {isErasing ? <Pencil className="h-4 w-4" /> : <Eraser className="h-4 w-4" />}
+              {isErasing ? (
+                <Pencil className="h-4 w-4" />
+              ) : (
+                <Eraser className="h-4 w-4" />
+              )}
             </Button>
             <Button onClick={clearCanvas} variant="outline">
               Clear
             </Button>
           </div>
-          <Button onClick={saveDoodle}>Add Doodle</Button>
+          <Button
+            onClick={() => saveDoodle.mutate()}
+            disabled={saveDoodle.isPending}
+          >
+            {saveDoodle.isPending ? "Saving..." : "Add Doodle"}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
-  )
-}
-
+  );
+};
