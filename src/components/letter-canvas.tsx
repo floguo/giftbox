@@ -18,7 +18,6 @@ interface LetterCanvasProps {
 
 export const LetterCanvas: React.FC<LetterCanvasProps> = ({ 
   items, 
-  updateItemPosition,
   updateItemContent,
   deleteItem, 
   handleDragStart,

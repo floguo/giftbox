@@ -20,6 +20,8 @@ export interface LetterItem {
   scale?: number
   color?: string
   caption?: string
+  offsetX?: number
+  offsetY?: number
 }
 
 export default function DigitalLetterComposer() {
@@ -78,8 +80,8 @@ export default function DigitalLetterComposer() {
     
     const position = 'touches' in e ? e.touches[0] : e
     const rect = canvasRef.current.getBoundingClientRect()
-    const x = position.clientX - rect.left - (currentItem as any).offsetX
-    const y = position.clientY - rect.top - (currentItem as any).offsetY
+    const x = position.clientX - rect.left - (currentItem?.offsetX ?? 0)
+    const y = position.clientY - rect.top - (currentItem?.offsetY ?? 0)
 
     updateItemPosition(currentItem.id, { x, y })
   }
@@ -118,14 +120,6 @@ export default function DigitalLetterComposer() {
       position: { x: Math.random() * 200, y: Math.random() * 200 },
       rotation: (Math.random() - 0.5) * 10
     })
-  }
-
-  const handleSendGift = async () => {
-    // In a real application, you would send the gift data to your backend here
-    // and generate a unique sharable link. For this example, we'll simulate it.
-    await new Promise(resolve => setTimeout(resolve, 1500)) // Simulate network request
-    const uniqueId = Math.random().toString(36).substring(2, 15)
-    return `https://yourdomain.com/gift/${uniqueId}`
   }
 
   return (
