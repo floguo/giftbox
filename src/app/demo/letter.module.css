@@ -1,0 +1,158 @@
+#envelope {
+  position: absolute;
+  width: var(--env-width);
+  height: var(--env-height);
+  border-bottom-left-radius: var(--env-border-radius);
+  border-bottom-right-radius: var(--env-border-radius);
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 20px;
+  background-color: var(--color-flap);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+.front {
+  position: absolute;
+  width: 0;
+  height: 0;
+  z-index: 3;
+}
+.flap {
+  border-left: calc(var(--env-width) / 2) solid transparent;
+  border-right: calc(var(--env-width) / 2) solid transparent;
+  border-bottom: calc(var(--env-height) / 2 - 8px) solid transparent; /* a little smaller */
+  border-top: calc(var(--env-height) / 2 + 8px) solid var(--color-flap); /* a little larger */
+  transform-origin: top;
+  pointer-events: none;
+}
+.pocket {
+  border-left: calc(var(--env-width) / 2) solid var(--color-env);
+  border-right: calc(var(--env-width) / 2) solid var(--color-env);
+  border-bottom: calc(var(--env-height) / 2) solid var(--color-env2);
+  border-top: calc(var(--env-height) / 2) solid transparent;
+  border-bottom-left-radius: var(--env-border-radius);
+  border-bottom-right-radius: var(--env-border-radius);
+}
+.letter {
+  position: relative;
+  background-color: #fff;
+  width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+  height: calc(var(--env-height) * 0.9);
+  top: 5%;
+  border-radius: var(--env-border-radius);
+  box-shadow: 0 2px 26px rgba(0, 0, 0, 0.12);
+  padding: 1rem;
+  transform-origin: top;
+  overflow: hidden;
+  transition: height 0.4s ease;
+}
+
+.open .flap {
+  transform: rotateX(180deg);
+  transition: transform 0.4s ease, z-index 0.6s;
+  z-index: 1;
+}
+.close .flap {
+  transform: rotateX(0deg);
+  transition: transform 0.4s 0.6s ease, z-index 1s;
+  z-index: 5;
+}
+.close .letter {
+  transform: translateY(0);
+  transition: transform 0.4s ease, z-index 1s, height 0.4s ease;
+  z-index: 1;
+}
+.open .letter {
+  height: calc(var(--env-height) * 1.8);
+  transform: translateY(calc(var(--env-height) * -1.6));
+  transition: transform 0.4s 0.6s ease, z-index 0.6s, height 0.4s 0.6s ease;
+  z-index: 2;
+}
+
+@-webkit-keyframes slideUp {
+  0% {
+    top: 0;
+  }
+  100% {
+    top: -600px;
+  }
+}
+@keyframes slideUp {
+  0% {
+    top: 0;
+  }
+  100% {
+    top: -600px;
+  }
+}
+@-webkit-keyframes sideSway {
+  0% {
+    margin-left: 0px;
+  }
+  100% {
+    margin-left: 50px;
+  }
+}
+@keyframes sideSway {
+  0% {
+    margin-left: 0px;
+  }
+  100% {
+    margin-left: 50px;
+  }
+}
+
+.envlope-wrapper {
+  height: 620px;
+  overflow: hidden;
+  position: relative;
+}
+.reset {
+  text-align: center;
+}
+.reset button {
+  font-weight: 800;
+  font-style: normal;
+  transition: all 0.1s linear;
+  background-color: transparent;
+  border: solid 2px var(--color-env);
+  border-radius: 4px;
+  color: var(--color-env);
+  display: inline-block;
+  font-size: 14px;
+  text-transform: uppercase;
+  margin: 5px;
+  padding: 10px;
+  line-height: 1em;
+  text-decoration: none;
+  min-width: 120px;
+  cursor: pointer;
+}
+.reset button:hover {
+  background-color: var(--color-env);
+  color: #fff;
+}
+
+.open #envelope {
+  transform: translate(-50%, calc(var(--env-height) * 0.6));
+  transition: transform 0.4s 0.6s ease;
+}
+
+.close #envelope {
+  transform: translate(-50%, 0);
+  transition: transform 0.4s ease;
+}
+
+.open .pocket {
+  transition: transform 0.4s 0.3s ease;
+}
+
+.close .pocket {
+  transition: transform 0.4s 0.6s ease;
+}
+
+.signature {
+  font-family: var(--font-caveat);
+  font-size: 2rem;
+}

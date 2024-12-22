@@ -8,6 +8,10 @@ body {
 
 @layer base {
   :root {
+    --env-width: min(90vw, 320px);
+    --env-height: min(58vw, 205px);
+    --env-border-radius: 6px;
+
     --background: 0 0% 100%;
     --foreground: 20 14.3% 4.1%;
     --card: 0 0% 100%;
@@ -33,6 +37,13 @@ body {
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
+
+    --color-env: #f0f0f0;
+    --color-env2: #f5f5f5;
+    --color-flap: #fcfcfc;
+    --color-bg: #e6f3fa;
+    --color-heart: #d00000;
+    --heart-width: 50px;
   }
 
   input[type="range"] {
@@ -90,4 +101,3 @@ body {
     background-color: #fce7f3;
   }
 }
-
