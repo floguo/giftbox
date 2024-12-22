@@ -18,23 +18,29 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 export default function MainContent({
   id,
   restoredState,
+  to,
+  from,
+  isEditable,
 }: {
   id: string;
   restoredState: LetterItem[] | null;
+  to: string;
+  from: string;
+  isEditable: boolean;
 }) {
   const queryClient = new QueryClient();
   return (
     <QueryClientProvider client={queryClient}>
       <AppContextProvider giftId={id} restoredState={restoredState}>
         <DndProvider backend={HTML5Backend}>
-          <DigitalLetterComposer />
+          <DigitalLetterComposer isEditable={isEditable} />
         </DndProvider>
       </AppContextProvider>
     </QueryClientProvider>
   );
 }
 
-function DigitalLetterComposer() {
+function DigitalLetterComposer({ isEditable }: { isEditable: boolean }) {
   const { items, setItems } = useAppContext();
   const [isPhotoUploaderOpen, setIsPhotoUploaderOpen] = useState(false);
   const [isVoiceRecorderOpen, setIsVoiceRecorderOpen] = useState(false);
@@ -42,6 +48,20 @@ function DigitalLetterComposer() {
   const [isDragging, setIsDragging] = useState(false);
   const [currentItem, setCurrentItem] = useState<LetterItem | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
+
+  const getViewportPosition = () => {
+    if (!canvasRef.current) return { x: 100, y: 100 };
+
+    const rect = canvasRef.current.getBoundingClientRect();
+    const scrollLeft = canvasRef.current.scrollLeft;
+    const scrollTop = canvasRef.current.scrollTop;
+
+    // Add items slightly offset from the top-left of the viewport
+    const x = scrollLeft + 100;
+    const y = scrollTop + 100;
+
+    return { x, y };
+  };
 
   const addItem = (item: LetterItem) => {
     setItems((prevItems) => [...prevItems, item]);
@@ -112,79 +132,108 @@ function DigitalLetterComposer() {
   };
 
   const addNote = (color: string) => {
+    const pos = getViewportPosition();
     addItem({
       id: Date.now().toString(),
       type: "note",
       content: "",
-      position: { x: Math.random() * 200, y: Math.random() * 200 },
+      position: {
+        x: pos.x + Math.random() * 100,
+        y: pos.y + Math.random() * 100,
+      },
       rotation: (Math.random() - 0.5) * 10,
-      color: color, // Ensure the color is being set correctly
+      color: color,
     });
   };
 
   const addSpotifyPlayer = (spotifyUrl: string) => {
+    const pos = getViewportPosition();
     addItem({
       id: Date.now().toString(),
       type: "spotify",
       content: spotifyUrl,
-      position: { x: Math.random() * 200, y: Math.random() * 200 },
+      position: {
+        x: pos.x + Math.random() * 100,
+        y: pos.y + Math.random() * 100,
+      },
       rotation: (Math.random() - 0.5) * 10,
     });
   };
 
   const addDoodle = (doodleUrl: string) => {
+    const pos = getViewportPosition();
     addItem({
       id: Date.now().toString(),
       type: "doodle",
       content: doodleUrl,
-      position: { x: Math.random() * 200, y: Math.random() * 200 },
+      position: {
+        x: pos.x + Math.random() * 100,
+        y: pos.y + Math.random() * 100,
+      },
       rotation: (Math.random() - 0.5) * 10,
     });
   };
 
   return (
-    <div className="h-screen overflow-hidden bg-stone-200 flex flex-col relative">
+    <div className="h-screen bg-stone-200 flex flex-col relative">
       <DottedBackground />
-      <main
-        className="flex-1 relative overflow-hidden z-20"
-        ref={canvasRef}
-        onMouseMove={handleDragMove}
-        onTouchMove={handleDragMove}
-        onMouseUp={handleDragEnd}
-        onTouchEnd={handleDragEnd}
-        onMouseLeave={handleDragEnd}
-      >
-        <LetterCanvas
-          items={items}
-          updateItemPosition={updateItemPosition}
-          updateItemContent={updateItemContent}
-          deleteItem={deleteItem}
-          handleDragStart={handleDragStart}
-          isDragging={isDragging}
-          currentItem={currentItem}
-        />
-      </main>
       <div className="absolute top-4 right-4 z-30">
         <Header />
       </div>
-      <div className="absolute bottom-0 left-0 right-0 z-30">
-        <Toolbar
-          onAddPhoto={() => setIsPhotoUploaderOpen(true)}
-          onAddNote={addNote}
-          onRecordVoice={() => setIsVoiceRecorderOpen(true)}
-          onAddSpotify={addSpotifyPlayer}
-          onAddDoodle={() => setIsDoodleDrawerOpen(true)}
-        />
-      </div>
+      <main
+        className="flex-1 relative z-20 pt-16 pb-64 overflow-scroll touch-pan-x touch-pan-y overscroll-none"
+        ref={canvasRef}
+        onMouseMove={isEditable ? handleDragMove : undefined}
+        onTouchMove={(e) => {
+          if (isDragging && isEditable) {
+            e.preventDefault();
+            handleDragMove(e);
+          }
+        }}
+        onMouseUp={isEditable ? handleDragEnd : undefined}
+        onTouchEnd={isEditable ? handleDragEnd : undefined}
+        onMouseLeave={isEditable ? handleDragEnd : undefined}
+      >
+        <div className="min-w-full min-h-full flex items-center justify-center">
+          <LetterCanvas
+            items={items}
+            updateItemPosition={updateItemPosition}
+            updateItemContent={updateItemContent}
+            deleteItem={deleteItem}
+            handleDragStart={(e, item) => {
+              e.stopPropagation();
+              handleDragStart(e, item);
+            }}
+            isDragging={isDragging}
+            currentItem={currentItem}
+            isEditable={isEditable}
+          />
+        </div>
+      </main>
+      {isEditable && (
+        <div className="fixed bottom-0 left-0 right-0 z-30">
+          <Toolbar
+            onAddPhoto={() => setIsPhotoUploaderOpen(true)}
+            onAddNote={addNote}
+            onRecordVoice={() => setIsVoiceRecorderOpen(true)}
+            onAddSpotify={addSpotifyPlayer}
+            onAddDoodle={() => setIsDoodleDrawerOpen(true)}
+          />
+        </div>
+      )}
       {isPhotoUploaderOpen && (
         <PhotoUploader
           onClose={() => setIsPhotoUploaderOpen(false)}
           onPhotoAdd={(photoUrl) => {
+            const pos = getViewportPosition();
             addItem({
               id: Date.now().toString(),
               type: "photo",
               content: photoUrl,
-              position: { x: Math.random() * 200, y: Math.random() * 200 },
+              position: {
+                x: pos.x + Math.random() * 100,
+                y: pos.y + Math.random() * 100,
+              },
               rotation: (Math.random() - 0.5) * 10,
               caption: "",
             });
@@ -196,11 +245,15 @@ function DigitalLetterComposer() {
         <VoiceRecorder
           onClose={() => setIsVoiceRecorderOpen(false)}
           onVoiceAdd={(audioBlob) => {
+            const pos = getViewportPosition();
             addItem({
               id: Date.now().toString(),
               type: "voice",
               content: audioBlob,
-              position: { x: Math.random() * 200, y: Math.random() * 200 },
+              position: {
+                x: pos.x + Math.random() * 100,
+                y: pos.y + Math.random() * 100,
+              },
               rotation: (Math.random() - 0.5) * 10,
             });
             setIsVoiceRecorderOpen(false);

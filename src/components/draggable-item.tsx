@@ -17,6 +17,7 @@ interface DraggableItemProps {
   isDragging: boolean;
   updateItemContent: (id: string, content: string, field?: string) => void;
   children: React.ReactNode;
+  isEditable: boolean;
 }
 
 export const DraggableItem: React.FC<DraggableItemProps> = ({
@@ -25,6 +26,8 @@ export const DraggableItem: React.FC<DraggableItemProps> = ({
   handleDragStart,
   isDragging,
   updateItemContent,
+  children,
+  isEditable,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -34,7 +37,7 @@ export const DraggableItem: React.FC<DraggableItemProps> = ({
     top: item.position.y,
     transform: `rotate(${item.rotation}deg)`,
     opacity: isDragging ? 0.5 : 1,
-    cursor: "move",
+    cursor: isEditable ? "move" : "default",
     transition: isDragging ? "none" : "all 0.3s ease-out",
     userSelect: "none",
     WebkitUserSelect: "none",
@@ -81,6 +84,7 @@ export const DraggableItem: React.FC<DraggableItemProps> = ({
 
   const handleMouseDown = (e: React.MouseEvent | React.TouchEvent) => {
     if (
+      !isEditable ||
       (e.target as HTMLElement).tagName === "INPUT" ||
       (e.target as HTMLElement).tagName === "TEXTAREA" ||
       (e.target as HTMLElement).closest("button")
@@ -100,8 +104,8 @@ export const DraggableItem: React.FC<DraggableItemProps> = ({
       onMouseLeave={() => setIsHovered(false)}
       className="relative group touch-none"
     >
-      {renderItem()}
-      {isHovered && (
+      {children}
+      {isEditable && isHovered && (
         <Button
           variant="ghost"
           size="icon"

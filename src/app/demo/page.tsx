@@ -7,12 +7,11 @@ export default function Letter() {
   const [isOpen, setIsOpen] = useState(false);
   return (
     <main>
-      <div
-        className={`${styles["envlope-wrapper"]} mt-40 ${
-          isOpen ? styles.open : styles.close
-        }`}
-      >
-        <div id={styles.envelope}>
+      <div className={`${styles["envlope-wrapper"]} mt-40`}>
+        <div
+          id={styles.envelope}
+          className={isOpen ? styles.open : styles.close}
+        >
           <div className={`${styles.front} ${styles.flap}`}></div>
           <div className={`${styles.front} ${styles.pocket}`}></div>
           <div className={styles.letter}>

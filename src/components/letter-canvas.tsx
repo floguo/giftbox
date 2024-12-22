@@ -17,6 +17,7 @@ interface LetterCanvasProps {
   ) => void;
   isDragging: boolean;
   currentItem: LetterItem | null;
+  isEditable: boolean;
 }
 
 export const LetterCanvas: React.FC<LetterCanvasProps> = ({
@@ -26,7 +27,7 @@ export const LetterCanvas: React.FC<LetterCanvasProps> = ({
   handleDragStart,
   isDragging,
   currentItem,
-  // updateItemPosition,
+  isEditable,
 }) => {
   const renderItem = (item: LetterItem) => {
     switch (item.type) {
@@ -66,7 +67,7 @@ export const LetterCanvas: React.FC<LetterCanvasProps> = ({
   };
 
   return (
-    <div className="w-full h-full relative">
+    <div className="w-[3000px] h-[3000px] relative">
       {items.map((item) => (
         <DraggableItem
           key={item.id}
@@ -75,6 +76,7 @@ export const LetterCanvas: React.FC<LetterCanvasProps> = ({
           handleDragStart={handleDragStart}
           isDragging={isDragging && currentItem?.id === item.id}
           updateItemContent={updateItemContent}
+          isEditable={isEditable}
         >
           {renderItem(item)}
         </DraggableItem>
