@@ -46,8 +46,14 @@ function DigitalLetterComposer({ isEditable }: { isEditable: boolean }) {
   const [isVoiceRecorderOpen, setIsVoiceRecorderOpen] = useState(false);
   const [isDoodleDrawerOpen, setIsDoodleDrawerOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const [currentItem, setCurrentItem] = useState<LetterItem | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
+
+  interface DraggableItem extends LetterItem {
+    offsetX: number;
+    offsetY: number;
+  }
+
+  const [currentItem, setCurrentItem] = useState<DraggableItem | null>(null);
 
   const getViewportPosition = () => {
     if (!canvasRef.current) return { x: 100, y: 100 };
@@ -110,7 +116,7 @@ function DigitalLetterComposer({ isEditable }: { isEditable: boolean }) {
       },
       offsetX,
       offsetY,
-    } as LetterItem & { offsetX: number; offsetY: number });
+    });
   };
 
   const handleDragMove = (e: React.MouseEvent | React.TouchEvent) => {
@@ -118,15 +124,24 @@ function DigitalLetterComposer({ isEditable }: { isEditable: boolean }) {
 
     const position = "touches" in e ? e.touches[0] : e;
     const rect = canvasRef.current.getBoundingClientRect();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const x = position.clientX - rect.left - (currentItem as any).offsetX;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const y = position.clientY - rect.top - (currentItem as any).offsetY;
+    const scrollLeft = canvasRef.current.scrollLeft;
+    const scrollTop = canvasRef.current.scrollTop;
+
+    // Calculate the new position in canvas coordinates
+    const touchX = position.clientX - rect.left + scrollLeft;
+    const touchY = position.clientY - rect.top + scrollTop;
+
+    // Subtract the initial offset to maintain the grab point
+    const x = touchX - currentItem.offsetX;
+    const y = touchY - currentItem.offsetY;
 
     updateItemPosition(currentItem.id, { x, y });
   };
 
   const handleDragEnd = () => {
+    if (canvasRef.current) {
+      canvasRef.current.style.overflow = "auto";
+    }
     setIsDragging(false);
     setCurrentItem(null);
   };
@@ -181,7 +196,7 @@ function DigitalLetterComposer({ isEditable }: { isEditable: boolean }) {
         <Header />
       </div>
       <main
-        className="flex-1 relative z-20 pt-16 pb-64 overflow-scroll touch-pan-x touch-pan-y overscroll-none"
+        className="flex-1 relative z-20 h-screen w-screen overflow-auto"
         ref={canvasRef}
         onMouseMove={isEditable ? handleDragMove : undefined}
         onTouchMove={(e) => {
@@ -194,21 +209,19 @@ function DigitalLetterComposer({ isEditable }: { isEditable: boolean }) {
         onTouchEnd={isEditable ? handleDragEnd : undefined}
         onMouseLeave={isEditable ? handleDragEnd : undefined}
       >
-        <div className="min-w-full min-h-full flex items-center justify-center">
-          <LetterCanvas
-            items={items}
-            updateItemPosition={updateItemPosition}
-            updateItemContent={updateItemContent}
-            deleteItem={deleteItem}
-            handleDragStart={(e, item) => {
-              e.stopPropagation();
-              handleDragStart(e, item);
-            }}
-            isDragging={isDragging}
-            currentItem={currentItem}
-            isEditable={isEditable}
-          />
-        </div>
+        <LetterCanvas
+          items={items}
+          updateItemPosition={updateItemPosition}
+          updateItemContent={updateItemContent}
+          deleteItem={deleteItem}
+          handleDragStart={(e, item) => {
+            e.stopPropagation();
+            handleDragStart(e, item);
+          }}
+          isDragging={isDragging}
+          currentItem={currentItem}
+          isEditable={isEditable}
+        />
       </main>
       {isEditable && (
         <div className="fixed bottom-0 left-0 right-0 z-30">
