@@ -6,8 +6,8 @@ import styles from "./letter.module.css";
 export default function Letter() {
   const [isOpen, setIsOpen] = useState(false);
   return (
-    <main>
-      <div className={`${styles["envlope-wrapper"]} mt-40`}>
+    <main className="h-screen w-screen flex flex-col items-center justify-center">
+      <div className={styles["envlope-wrapper"]}>
         <div
           id={styles.envelope}
           className={isOpen ? styles.open : styles.close}

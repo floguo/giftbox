@@ -105,9 +105,11 @@
 }
 
 .envlope-wrapper {
-  height: 620px;
   overflow: hidden;
   position: relative;
+  z-index: 100;
+  width: 100%;
+  height: 100%;
 }
 .reset {
   text-align: center;
