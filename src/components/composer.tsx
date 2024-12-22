@@ -35,8 +35,6 @@ export default function DigitalLetterComposer({
 
   const getViewportPosition = () => {
     if (!canvasRef.current) return { x: 100, y: 100 };
-
-    const rect = canvasRef.current.getBoundingClientRect();
     const scrollLeft = canvasRef.current.scrollLeft;
     const scrollTop = canvasRef.current.scrollTop;
 

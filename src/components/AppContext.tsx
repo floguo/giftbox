@@ -23,6 +23,7 @@ export const AppContextProvider = ({
   giftId,
   restoredState,
   useLocalStorage,
+  isEditable,
 }: {
   children: ReactNode;
   giftId: string;
@@ -32,11 +33,13 @@ export const AppContextProvider = ({
     setIsLetterShowed: (value: boolean) => void;
     removeIsLetterShowed: () => void;
   };
+  isEditable: boolean;
 }) => {
   const value = useInternalGetAppContext(
     giftId,
     restoredState,
-    useLocalStorage
+    useLocalStorage,
+    isEditable
   );
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
@@ -48,7 +51,8 @@ function useInternalGetAppContext(
     isLetterShowed: boolean | undefined;
     setIsLetterShowed: (value: boolean) => void;
     removeIsLetterShowed: () => void;
-  }
+  },
+  isEditable: boolean
 ) {
   const [items, setItems] = useState<LetterItem[]>(restoredState ?? []);
 
@@ -79,6 +83,7 @@ function useInternalGetAppContext(
     isLetterShowed: useLocalStorage.isLetterShowed,
     setIsLetterShowed: useLocalStorage.setIsLetterShowed,
     removeIsLetterShowed: useLocalStorage.removeIsLetterShowed,
+    isEditable,
   } as const;
 
   return value;

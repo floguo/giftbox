@@ -1,8 +1,4 @@
-import { LetterNote } from "@/components/letter-note";
-import { PhotoItem } from "@/components/photo-item";
-import { SpotifyPlayer } from "@/components/spotify-player";
 import { Button } from "@/components/ui/button";
-import { VoiceNote } from "@/components/voice-note";
 import { LetterItem } from "@/lib/type";
 import { X } from "lucide-react";
 import React, { useState } from "react";
@@ -15,7 +11,6 @@ interface DraggableItemProps {
     item: LetterItem
   ) => void;
   isDragging: boolean;
-  updateItemContent: (id: string, content: string, field?: string) => void;
   children: React.ReactNode;
   isEditable: boolean;
 }
@@ -25,7 +20,6 @@ export const DraggableItem: React.FC<DraggableItemProps> = ({
   onDelete,
   handleDragStart,
   isDragging,
-  updateItemContent,
   children,
   isEditable,
 }) => {
@@ -43,43 +37,6 @@ export const DraggableItem: React.FC<DraggableItemProps> = ({
     WebkitUserSelect: "none",
     MozUserSelect: "none",
     msUserSelect: "none",
-  };
-
-  const renderItem = () => {
-    switch (item.type) {
-      case "photo":
-        return (
-          <PhotoItem
-            url={item.content as string}
-            caption={item.caption || ""}
-            onCaptionChange={(caption) =>
-              updateItemContent(item.id, caption, "caption")
-            }
-          />
-        );
-      case "note":
-        return (
-          <LetterNote
-            content={item.content as string}
-            onChange={(content) => updateItemContent(item.id, content)}
-            color={item.color || "bg-white"}
-          />
-        );
-      case "voice":
-        return <VoiceNote audioUrl={item.content as string} />;
-      case "spotify":
-        return <SpotifyPlayer spotifyUrl={item.content as string} />;
-      case "doodle":
-        return (
-          <object
-            data={item.content as string}
-            type="image/svg+xml"
-            className="w-48 h-48 pointer-events-none"
-          />
-        );
-      default:
-        return null;
-    }
   };
 
   const handleMouseDown = (e: React.MouseEvent | React.TouchEvent) => {

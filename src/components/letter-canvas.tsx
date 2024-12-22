@@ -75,7 +75,6 @@ export const LetterCanvas: React.FC<LetterCanvasProps> = ({
           onDelete={() => deleteItem(item.id)}
           handleDragStart={handleDragStart}
           isDragging={isDragging && currentItem?.id === item.id}
-          updateItemContent={updateItemContent}
           isEditable={isEditable}
         >
           {renderItem(item)}

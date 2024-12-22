@@ -39,6 +39,7 @@ export default function MainContent({
           setIsLetterShowed,
           removeIsLetterShowed,
         }}
+        isEditable={isEditable}
       >
         <DndProvider backend={HTML5Backend}>
           <Main to={to} from={from} isEditable={isEditable} />
