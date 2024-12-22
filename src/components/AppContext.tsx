@@ -22,18 +22,33 @@ export const AppContextProvider = ({
   children,
   giftId,
   restoredState,
+  useLocalStorage,
 }: {
   children: ReactNode;
   giftId: string;
   restoredState: LetterItem[] | null;
+  useLocalStorage: {
+    isLetterShowed: boolean | undefined;
+    setIsLetterShowed: (value: boolean) => void;
+    removeIsLetterShowed: () => void;
+  };
 }) => {
-  const value = useInternalGetAppContext(giftId, restoredState);
+  const value = useInternalGetAppContext(
+    giftId,
+    restoredState,
+    useLocalStorage
+  );
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
 
 function useInternalGetAppContext(
   giftId: string,
-  restoredState: LetterItem[] | null
+  restoredState: LetterItem[] | null,
+  useLocalStorage: {
+    isLetterShowed: boolean | undefined;
+    setIsLetterShowed: (value: boolean) => void;
+    removeIsLetterShowed: () => void;
+  }
 ) {
   const [items, setItems] = useState<LetterItem[]>(restoredState ?? []);
 
@@ -61,6 +76,9 @@ function useInternalGetAppContext(
     saveCanvas: {
       isPending: saveCanvas.isPending,
     },
+    isLetterShowed: useLocalStorage.isLetterShowed,
+    setIsLetterShowed: useLocalStorage.setIsLetterShowed,
+    removeIsLetterShowed: useLocalStorage.removeIsLetterShowed,
   } as const;
 
   return value;

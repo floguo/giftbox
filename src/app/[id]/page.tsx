@@ -6,11 +6,16 @@ export default async function Page({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ to: string; from: string; isEditable?: string }>;
+  searchParams: Promise<{
+    to: string;
+    from: string;
+    isEditable?: string;
+    letterShown?: string;
+  }>;
 }) {
   const id = (await params).id;
   if (!id) throw new Error("No id provided");
-  const { to, from, isEditable } = await searchParams;
+  const { to, from, isEditable, letterShown } = await searchParams;
   const restoredState = await getCanvasState(id);
   return (
     <InnerComponent
@@ -19,6 +24,7 @@ export default async function Page({
       to={to}
       from={from}
       isEditable={isEditable ? isEditable === "true" : true}
+      letterShown={letterShown ? letterShown === "true" : false}
     />
   );
 }

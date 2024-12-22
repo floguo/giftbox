@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useAppContext } from "../AppContext";
 import styles from "./letter.module.css";
 
 export default function Letter({ to, from }: { to: string; from: string }) {
+  const { setIsLetterShowed } = useAppContext();
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
@@ -40,7 +42,10 @@ export default function Letter({ to, from }: { to: string; from: string }) {
               <p className={styles.signature}>{from ? from : "Your friend"}</p>
             </div>
           </div>
-          <button className="z-[100] absolute bottom-40 left-1/2 -translate-x-1/2 bg-white hover:bg-gray-900 hover:text-white px-3 py-1 rounded-md border border-gray-300 transition-all">
+          <button
+            className="z-[100] absolute bottom-40 left-1/2 -translate-x-1/2 bg-white hover:bg-gray-900 hover:text-white px-3 py-1 rounded-md border border-gray-300 transition-all"
+            onClick={() => setIsLetterShowed(true)}
+          >
             Show my present
           </button>
         </div>

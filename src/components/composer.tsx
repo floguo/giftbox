@@ -3,6 +3,7 @@ import { useRef } from "react";
 import { useState } from "react";
 
 import { LetterItem } from "@/lib/type";
+import { MailOpen } from "lucide-react";
 import { useAppContext } from "./AppContext";
 import { DoodleDrawer } from "./doodle-drawer";
 import { DottedBackground } from "./dotted-background";
@@ -10,6 +11,7 @@ import { Header } from "./Header";
 import { LetterCanvas } from "./letter-canvas";
 import { PhotoUploader } from "./photo-uploader";
 import { Toolbar } from "./toolbar";
+import { Button } from "./ui/button";
 import { VoiceRecorder } from "./voice-recorder";
 
 export default function DigitalLetterComposer({
@@ -17,7 +19,7 @@ export default function DigitalLetterComposer({
 }: {
   isEditable: boolean;
 }) {
-  const { items, setItems } = useAppContext();
+  const { items, setItems, removeIsLetterShowed } = useAppContext();
   const [isPhotoUploaderOpen, setIsPhotoUploaderOpen] = useState(false);
   const [isVoiceRecorderOpen, setIsVoiceRecorderOpen] = useState(false);
   const [isDoodleDrawerOpen, setIsDoodleDrawerOpen] = useState(false);
@@ -168,9 +170,7 @@ export default function DigitalLetterComposer({
   return (
     <div className="h-screen bg-stone-200 flex flex-col relative">
       <DottedBackground />
-      <div className="absolute top-4 right-4 z-30">
-        <Header />
-      </div>
+      <Header />
       <main
         className="flex-1 relative z-20 h-screen w-screen overflow-auto"
         ref={canvasRef}
@@ -258,6 +258,15 @@ export default function DigitalLetterComposer({
           }}
         />
       )}
+      <Button
+        size="sm"
+        onClick={() => {
+          removeIsLetterShowed();
+        }}
+        className="absolute bottom-4 left-4 z-30"
+      >
+        <MailOpen className="w-4 h-4" />
+      </Button>
     </div>
   );
 }
