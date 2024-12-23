@@ -1,9 +1,15 @@
 import { getCanvasState } from "@/lib/action";
 import InnerComponent from "./InnerComponent";
 
-export async function generateMetadata({ params }: { params: { id: string } }) {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const baseUrl = `https://friendsgift.ing`;
-  const session = await getCanvasState(params.id);
+  const id = (await params).id;
+  if (!id) throw new Error("No id provided");
+  const session = await getCanvasState(id);
 
   const customTitle = session?.letter?.from
     ? `${session.letter.from} has a gift for you!`
@@ -15,9 +21,10 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
     openGraph: {
       title: `Friendsgifting`,
       description: customTitle,
-      url: `${baseUrl}/${params.id}`,
+      url: `${baseUrl}/${id}`,
       type: "website",
       images: [`${baseUrl}/api/og?title=${encodeURIComponent(customTitle)}`],
+      logo: `${baseUrl}/logo.png`,
     },
     twitter: {
       card: "summary_large_image",

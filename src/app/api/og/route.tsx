@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { readFileSync } from "fs";
 import { ImageResponse } from "next/og";
 import { join } from "path";
