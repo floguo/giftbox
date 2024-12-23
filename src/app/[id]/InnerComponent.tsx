@@ -4,7 +4,7 @@ import { AppContextProvider, useAppContext } from "@/components/AppContext";
 import DigitalLetterComposer from "@/components/composer";
 import { Header } from "@/components/Header";
 import Letter from "@/components/letter";
-import { LetterItem } from "@/lib/type";
+import { savedState } from "@/lib/action";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { DndProvider } from "react-dnd";
@@ -14,15 +14,11 @@ import { useLocalStorage } from "react-use";
 export default function MainContent({
   id,
   restoredState,
-  to,
-  from,
   isEditable,
   letterShown,
 }: {
   id: string;
-  restoredState: LetterItem[] | null;
-  to: string;
-  from: string;
+  restoredState: savedState | null;
   isEditable: boolean;
   letterShown: boolean;
 }) {
@@ -43,22 +39,14 @@ export default function MainContent({
         isEditable={isEditable}
       >
         <DndProvider backend={HTML5Backend}>
-          <Main to={to} from={from} isEditable={isEditable} />
+          <Main isEditable={isEditable} />
         </DndProvider>
       </AppContextProvider>
     </QueryClientProvider>
   );
 }
 
-const Main = ({
-  to,
-  from,
-  isEditable,
-}: {
-  to: string;
-  from: string;
-  isEditable: boolean;
-}) => {
+const Main = ({ isEditable }: { isEditable: boolean }) => {
   const [mounted, setMounted] = useState(false);
   const { isLetterShowed } = useAppContext();
 
@@ -74,7 +62,7 @@ const Main = ({
   return (
     <div className="relative w-full h-full overflow-hidden">
       <Header />
-      {!isLetterShowed && <Letter to={to} from={from} />}
+      {!isLetterShowed && <Letter />}
       <DigitalLetterComposer isEditable={isEditable} />
     </div>
   );

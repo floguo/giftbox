@@ -11,21 +11,48 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  DEFAULT_LETTER_MESSAGE,
+  DEFAULT_LETTER_SIGNATURE,
+  DEFAULT_LETTER_TO,
+} from "@/lib/constant";
 import { Check, Copy } from "lucide-react";
 import { useState } from "react";
+import { useDebounce } from "react-use";
 
 export default function Share() {
-  const { saveCanvas } = useAppContext();
-  const [toName, setToName] = useState("");
-  const [fromName, setFromName] = useState("");
+  const { saveCanvas, letter } = useAppContext();
+  const [toName, setToName] = useState(letter.to ?? DEFAULT_LETTER_TO);
+  const [fromName, setFromName] = useState(
+    letter.from ?? DEFAULT_LETTER_SIGNATURE
+  );
+  const [message, setMessage] = useState(
+    letter.message ?? DEFAULT_LETTER_MESSAGE
+  );
   const [_isEditable, setIsEditable] = useState(false);
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  const [, cancel] = useDebounce(
+    () => {
+      cancel();
+      if (toName || fromName || message) {
+        saveCanvas.mutate({
+          letter: {
+            to: toName,
+            from: fromName,
+            message,
+          },
+        });
+      }
+    },
+    1000,
+    [toName, fromName, message]
+  );
+
   const generateShareLink = () => {
     const searchParams = new URLSearchParams();
-    searchParams.set("to", toName);
-    searchParams.set("from", fromName);
     searchParams.set("isEditable", _isEditable.toString());
 
     // Get the current URL and replace the search params
@@ -34,7 +61,16 @@ export default function Share() {
     return url.toString();
   };
 
-  const handleCopy = () => {
+  const handleCopy = async () => {
+    // Save the current state before copying
+    await saveCanvas.mutateAsync({
+      letter: {
+        to: toName,
+        from: fromName,
+        message,
+      },
+    });
+
     navigator.clipboard.writeText(generateShareLink());
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -71,6 +107,16 @@ export default function Share() {
                 />
               </div>
               <div className="grid gap-2">
+                <Label htmlFor="message">Message</Label>
+                <Textarea
+                  id="message"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder="Write your message..."
+                  className="min-h-[200px] resize-none"
+                />
+              </div>
+              <div className="grid gap-2">
                 <Label htmlFor="from">From</Label>
                 <Input
                   id="from"
@@ -97,6 +143,7 @@ export default function Share() {
                   size="icon"
                   onClick={handleCopy}
                   className="transition-all duration-200 w-9 h-9 flex-shrink-0"
+                  disabled={saveCanvas.isPending}
                 >
                   {copied ? (
                     <Check className="h-4 w-4" />

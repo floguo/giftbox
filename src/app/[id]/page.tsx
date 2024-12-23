@@ -7,22 +7,18 @@ export default async function Page({
 }: {
   params: Promise<{ id: string }>;
   searchParams: Promise<{
-    to: string;
-    from: string;
     isEditable?: string;
     letterShown?: string;
   }>;
 }) {
   const id = (await params).id;
   if (!id) throw new Error("No id provided");
-  const { to, from, isEditable, letterShown } = await searchParams;
+  const { isEditable, letterShown } = await searchParams;
   const restoredState = await getCanvasState(id);
   return (
     <InnerComponent
       id={id}
       restoredState={restoredState}
-      to={to}
-      from={from}
       isEditable={isEditable ? isEditable === "true" : true}
       letterShown={letterShown ? letterShown === "true" : false}
     />

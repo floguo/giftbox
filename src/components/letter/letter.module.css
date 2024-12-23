@@ -47,6 +47,14 @@
   transform-origin: top;
   overflow: hidden;
   transition: height 0.4s ease;
+  overflow-y: scroll;
+
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.letter::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
 }
 
 .open .flap {

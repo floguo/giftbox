@@ -1,12 +1,16 @@
 "use client";
 
+import {
+  DEFAULT_LETTER_MESSAGE,
+  DEFAULT_LETTER_SIGNATURE,
+} from "@/lib/constant";
 import { useEffect, useRef, useState } from "react";
 import { useClickAway } from "react-use";
 import { useAppContext } from "../AppContext";
 import styles from "./letter.module.css";
 
-export default function Letter({ to, from }: { to: string; from: string }) {
-  const { setIsLetterShowed } = useAppContext();
+export default function Letter() {
+  const { setIsLetterShowed, letter } = useAppContext();
   const [isOpen, setIsOpen] = useState(false);
   const envelopeRef = useRef(null);
 
@@ -32,21 +36,18 @@ export default function Letter({ to, from }: { to: string; from: string }) {
             <div className={`${styles.front} ${styles.flap}`}></div>
             <div className={`${styles.front} ${styles.pocket}`}></div>
             <div className={styles.letter}>
-              <p>Dear {to ? to : "my friend"},</p>
-              <br />
-              <p>
-                I hope this letter finds you well. I wanted to share something
-                special with you.
-              </p>
-              <br />
-              <p>
-                Here are some memories we shared together. Whether we are in
-                person, or separated by thousands of miles, I just want you to
-                know that I am thinking of you.
-              </p>
-              <br />
-              <p>Miss you,</p>
-              <p className={styles.signature}>{from ? from : "Your friend"}</p>
+              <div className={styles.letter_content}>
+                <p>Dear {letter.to ?? "my friend"},</p>
+                <br />
+                <p className="whitespace-pre-wrap">
+                  {letter.message != null || letter.message != ""
+                    ? letter.message
+                    : DEFAULT_LETTER_MESSAGE}
+                </p>
+                <p className={styles.signature}>
+                  {letter.from ?? DEFAULT_LETTER_SIGNATURE}
+                </p>
+              </div>
             </div>
           </div>
           <button

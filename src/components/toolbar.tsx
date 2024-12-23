@@ -27,16 +27,16 @@ export const Toolbar: React.FC<ToolbarProps> = ({
     <div className="fixed bottom-0 left-0 right-0">
       <div
         className={`transform ${
-          isOpen ? "translate-y-0" : "translate-y-full"
+          isOpen ? "translate-y-0" : "translate-y-[calc(100%-4rem)]"
         } transition-transform duration-300 ease-in-out relative`}
       >
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="absolute left-1/2 -translate-x-1/2 -top-8 bg-white rounded-t-xl px-4 py-2 shadow-md"
+          className="absolute left-[calc(50%-20px)] -translate-x-1/2 top-7 bg-white rounded-t-xl px-4 py-2"
         >
           {isOpen ? <ChevronDown /> : <ChevronUp />}
         </button>
-        <div className="mx-auto w-full max-w-4xl overflow-x-auto overflow-y-hidden px-4 pb-0 mb-4">
+        <div className="mx-auto w-full max-w-4xl overflow-x-auto px-4 pb-0 mb-4 pt-16">
           <div className="bg-white rounded-2xl h-40 px-4 sm:px-12 relative flex justify-start gap-12 md:justify-between items-end min-w-max mx-4">
             <div className="-mt-20">
               <Polaroid onClick={onAddPhoto} />
