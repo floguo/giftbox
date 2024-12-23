@@ -8,7 +8,6 @@ import {
 } from "@/lib/constant";
 import { LetterItem } from "@/lib/type";
 import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { createContext, ReactNode, useContext, useState } from "react";
 import { useDebounce } from "react-use";
 
@@ -60,7 +59,6 @@ function useInternalGetAppContext(
   },
   isEditable: boolean
 ) {
-  const router = useRouter();
   const [items, setItems] = useState<LetterItem[]>(restoredState?.items ?? []);
   const [letter, setLetter] = useState(
     restoredState?.letter ?? {
