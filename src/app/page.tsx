@@ -5,5 +5,5 @@ export default async function LandingPage() {
   // Generate a new CUID
   const id = createId();
   // Redirect to the new page
-  redirect(`/${id}`);
+  redirect(`/${id}?letterShown=true`);
 }
