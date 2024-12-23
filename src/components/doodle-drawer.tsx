@@ -46,16 +46,26 @@ export const DoodleDrawer: React.FC<DoodleDrawerProps> = ({
   const [currentPath, setCurrentPath] = useState<string>("");
   const pointsRef = useRef<{ x: number; y: number }[]>([]);
 
-  const getCoordinates = (e: React.MouseEvent<SVGSVGElement>) => {
+  const getCoordinates = (
+    e: React.MouseEvent<SVGSVGElement> | React.TouchEvent<SVGSVGElement>
+  ) => {
     const svg = svgRef.current;
     if (!svg) return { x: 0, y: 0 };
 
     const point = svg.createSVGPoint();
-    point.x = e.clientX;
-    point.y = e.clientY;
-    const transformedPoint = point.matrixTransform(
-      svg.getScreenCTM()?.inverse()
-    );
+    if ("touches" in e) {
+      const touch = e.touches[0];
+      point.x = touch.clientX;
+      point.y = touch.clientY;
+    } else {
+      point.x = e.clientX;
+      point.y = e.clientY;
+    }
+
+    const screenCTM = svg.getScreenCTM();
+    if (!screenCTM) return { x: 0, y: 0 };
+
+    const transformedPoint = point.matrixTransform(screenCTM.inverse());
 
     return {
       x: transformedPoint.x,
@@ -63,14 +73,20 @@ export const DoodleDrawer: React.FC<DoodleDrawerProps> = ({
     };
   };
 
-  const startDrawing = (e: React.MouseEvent<SVGSVGElement>) => {
+  const startDrawing = (
+    e: React.MouseEvent<SVGSVGElement> | React.TouchEvent<SVGSVGElement>
+  ) => {
+    e.preventDefault(); // Prevent scrolling on touch devices
     const point = getCoordinates(e);
     pointsRef.current = [point];
     setCurrentPath(`M ${point.x} ${point.y}`);
     setIsDrawing(true);
   };
 
-  const draw = (e: React.MouseEvent<SVGSVGElement>) => {
+  const draw = (
+    e: React.MouseEvent<SVGSVGElement> | React.TouchEvent<SVGSVGElement>
+  ) => {
+    e.preventDefault(); // Prevent scrolling on touch devices
     if (!isDrawing) return;
 
     const point = getCoordinates(e);
@@ -206,6 +222,11 @@ export const DoodleDrawer: React.FC<DoodleDrawerProps> = ({
               onMouseMove={draw}
               onMouseUp={stopDrawing}
               onMouseLeave={stopDrawing}
+              onTouchStart={startDrawing}
+              onTouchMove={draw}
+              onTouchEnd={stopDrawing}
+              onTouchCancel={stopDrawing}
+              style={{ touchAction: "none" }}
             >
               {paths.map((path, i) => (
                 <path
