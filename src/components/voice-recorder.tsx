@@ -1,91 +1,130 @@
-"use client"
+"use client";
 
-import React, { useState, useRef, useCallback, useEffect } from 'react'
-import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Mic, Square, Play, AlertCircle } from 'lucide-react'
-import { WaveformVisualizer } from './waveform-visualizer'
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { useMutation } from "@tanstack/react-query";
+import { upload } from "@vercel/blob/client";
+import { AlertCircle, Loader2, Mic, Play, Square } from "lucide-react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useAppContext } from "./AppContext";
+import { WaveformVisualizer } from "./waveform-visualizer";
 
 interface VoiceRecorderProps {
-  onClose: () => void
-  onVoiceAdd: (audioBlob: Blob) => void
+  onClose: () => void;
+  onVoiceAdd: (voiceUrl: string) => void;
 }
 
-export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onClose, onVoiceAdd }) => {
-  const [isRecording, setIsRecording] = useState(false)
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [audioContext, setAudioContext] = useState<AudioContext | null>(null)
-  const [sourceNode, setSourceNode] = useState<MediaStreamAudioSourceNode | AudioBufferSourceNode | null>(null)
+export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
+  onClose,
+  onVoiceAdd,
+}) => {
+  const [isRecording, setIsRecording] = useState(false);
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
+  const [sourceNode, setSourceNode] = useState<
+    MediaStreamAudioSourceNode | AudioBufferSourceNode | null
+  >(null);
 
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
-  const audioChunksRef = useRef<Blob[]>([])
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+
+  const { giftId } = useAppContext();
+
+  const uploadVoice = useMutation({
+    mutationFn: async (audioBlob: Blob) => {
+      const fileName = `voice-${Date.now()}.wav`;
+      const response = await upload(`${giftId}/${fileName}`, audioBlob, {
+        access: "public",
+        handleUploadUrl: "/api/upload",
+      });
+      return response;
+    },
+  });
 
   const startRecording = useCallback(async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      const newAudioContext = new AudioContext()
-      const newSourceNode = newAudioContext.createMediaStreamSource(stream)
-      setAudioContext(newAudioContext)
-      setSourceNode(newSourceNode)
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const newAudioContext = new AudioContext();
+      const newSourceNode = newAudioContext.createMediaStreamSource(stream);
+      setAudioContext(newAudioContext);
+      setSourceNode(newSourceNode);
 
-      mediaRecorderRef.current = new MediaRecorder(stream)
+      mediaRecorderRef.current = new MediaRecorder(stream);
 
       mediaRecorderRef.current.ondataavailable = (event) => {
-        audioChunksRef.current.push(event.data)
-      }
+        audioChunksRef.current.push(event.data);
+      };
 
       mediaRecorderRef.current.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' })
-        setAudioBlob(audioBlob)
-        audioChunksRef.current = []
-      }
+        const audioBlob = new Blob(audioChunksRef.current, {
+          type: "audio/wav",
+        });
+        setAudioBlob(audioBlob);
+        audioChunksRef.current = [];
+      };
 
-      mediaRecorderRef.current.start()
-      setIsRecording(true)
-      setError(null)
+      mediaRecorderRef.current.start();
+      setIsRecording(true);
+      setError(null);
     } catch (err) {
-      console.error('Error accessing microphone:', err)
-      setError('Error accessing microphone. Please check your permissions.')
+      console.error("Error accessing microphone:", err);
+      setError("Error accessing microphone. Please check your permissions.");
     }
-  }, [])
+  }, []);
 
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop()
-      setIsRecording(false)
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
     }
-  }, [isRecording])
+  }, [isRecording]);
 
   const playRecording = useCallback(() => {
     if (audioBlob && audioContext) {
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onload = async (e) => {
         try {
-          const arrayBuffer = e.target?.result as ArrayBuffer
-          const audioBuffer = await audioContext.decodeAudioData(arrayBuffer)
-          const source = audioContext.createBufferSource()
-          source.buffer = audioBuffer
-          source.connect(audioContext.destination)
-          setSourceNode(source)
-          source.start(0)
-          source.onended = () => setSourceNode(null)
+          const arrayBuffer = e.target?.result as ArrayBuffer;
+          const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+          const source = audioContext.createBufferSource();
+          source.buffer = audioBuffer;
+          source.connect(audioContext.destination);
+          setSourceNode(source);
+          source.start(0);
+          source.onended = () => setSourceNode(null);
         } catch (error) {
-          console.error('Error playing audio:', error)
-          setError('Error playing audio. Please try again.')
+          console.error("Error playing audio:", error);
+          setError("Error playing audio. Please try again.");
         }
-      }
-      reader.readAsArrayBuffer(audioBlob)
+      };
+      reader.readAsArrayBuffer(audioBlob);
     }
-  }, [audioBlob, audioContext])
+  }, [audioBlob, audioContext]);
+
+  const handleVoiceAdd = async (audioBlob: Blob) => {
+    try {
+      const response = await uploadVoice.mutateAsync(audioBlob);
+      onVoiceAdd(response.url);
+      onClose();
+    } catch (error) {
+      console.error("Error uploading voice note:", error);
+      setError("Error uploading voice note. Please try again.");
+    }
+  };
 
   useEffect(() => {
     return () => {
       if (audioContext) {
-        audioContext.close()
+        audioContext.close();
       }
-    }
-  }, [audioContext])
+    };
+  }, [audioContext]);
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
@@ -104,20 +143,31 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onClose, onVoiceAd
               onClick={isRecording ? stopRecording : startRecording}
               variant={isRecording ? "destructive" : "default"}
             >
-              {isRecording ? <Square className="mr-2" /> : <Mic className="mr-2" />}
-              {isRecording ? 'Stop Recording' : 'Start Recording'}
+              {isRecording ? (
+                <Square className="mr-2" />
+              ) : (
+                <Mic className="mr-2" />
+              )}
+              {isRecording ? "Stop Recording" : "Start Recording"}
             </Button>
-            <Button 
-              onClick={playRecording} 
-              disabled={!audioBlob}
-            >
+            <Button onClick={playRecording} disabled={!audioBlob}>
               <Play className="mr-2" />
               Play Recording
             </Button>
           </div>
           {audioBlob && (
-            <Button onClick={() => onVoiceAdd(audioBlob)}>
-              Add Voice Note
+            <Button
+              onClick={() => handleVoiceAdd(audioBlob)}
+              disabled={uploadVoice.isPending}
+            >
+              {uploadVoice.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Uploading...
+                </>
+              ) : (
+                "Add Voice Note"
+              )}
             </Button>
           )}
           {error && (
@@ -129,6 +179,5 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onClose, onVoiceAd
         </div>
       </DialogContent>
     </Dialog>
-  )
-}
-
+  );
+};

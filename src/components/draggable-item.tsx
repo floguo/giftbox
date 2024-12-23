@@ -1,81 +1,51 @@
-import React, { useState } from 'react'
-import { LetterItem } from '@/app/page'
-import { PhotoItem } from '@/components/photo-item'
-import { LetterNote } from '@/components/letter-note'
-import { VoiceNote } from '@/components/voice-note'
-import { Button } from "@/components/ui/button"
-import { X } from 'lucide-react'
-import { SpotifyPlayer } from '@/components/spotify-player';
+import { Button } from "@/components/ui/button";
+import { LetterItem } from "@/lib/type";
+import { X } from "lucide-react";
+import React, { useState } from "react";
 
 interface DraggableItemProps {
-  item: LetterItem
-  onDelete: () => void
-  handleDragStart: (e: React.MouseEvent | React.TouchEvent, item: LetterItem) => void
-  isDragging: boolean
-  updateItemContent: (id: string, content: string, field?: string) => void
-  children: React.ReactNode
+  item: LetterItem;
+  onDelete: () => void;
+  handleDragStart: (
+    e: React.MouseEvent | React.TouchEvent,
+    item: LetterItem
+  ) => void;
+  isDragging: boolean;
+  children: React.ReactNode;
+  isEditable: boolean;
 }
 
-export const DraggableItem: React.FC<DraggableItemProps> = ({ 
-  item, 
-  onDelete, 
-  handleDragStart, 
+export const DraggableItem: React.FC<DraggableItemProps> = ({
+  item,
+  onDelete,
+  handleDragStart,
   isDragging,
-  updateItemContent
+  children,
+  isEditable,
 }) => {
-  const [isHovered, setIsHovered] = useState(false)
+  const [isHovered, setIsHovered] = useState(false);
 
   const style: React.CSSProperties = {
-    position: 'absolute',
+    position: "absolute",
     left: item.position.x,
     top: item.position.y,
     transform: `rotate(${item.rotation}deg)`,
     opacity: isDragging ? 0.5 : 1,
-    cursor: 'move',
-    transition: isDragging ? 'none' : 'all 0.3s ease-out',
-    userSelect: 'none',
-    WebkitUserSelect: 'none',
-    MozUserSelect: 'none',
-    msUserSelect: 'none',
-  }
-
-  const renderItem = () => {
-    switch (item.type) {
-      case 'photo':
-        return (
-          <PhotoItem 
-            url={item.content as string} 
-            caption={item.caption || ''}
-            onCaptionChange={(caption) => updateItemContent(item.id, caption, 'caption')}
-          />
-        )
-      case 'note':
-        return <LetterNote 
-          content={item.content as string} 
-          onChange={(content) => updateItemContent(item.id, content)} 
-          color={item.color || 'bg-white'}
-        />
-      case 'voice':
-        return <VoiceNote audioBlob={item.content as Blob} />
-      case 'spotify':
-        return <SpotifyPlayer spotifyUrl={item.content as string} />
-      case 'doodle':
-        return (
-          <object 
-            data={item.content as string} 
-            type="image/svg+xml"
-            className="w-48 h-48 pointer-events-none" 
-          />
-        )
-      default:
-        return null
-    }
-  }
+    cursor: isEditable ? "move" : "default",
+    transition: isDragging ? "none" : "all 0.3s ease-out",
+    userSelect: "none",
+    WebkitUserSelect: "none",
+    MozUserSelect: "none",
+    msUserSelect: "none",
+  };
 
   const handleMouseDown = (e: React.MouseEvent | React.TouchEvent) => {
-    if ((e.target as HTMLElement).tagName === 'INPUT' || 
-      (e.target as HTMLElement).tagName === 'TEXTAREA' ||
-      (e.target as HTMLElement).closest('button')) {
+    if (
+      !isEditable ||
+      (e.target as HTMLElement).tagName === "INPUT" ||
+      (e.target as HTMLElement).tagName === "TEXTAREA" ||
+      (e.target as HTMLElement).closest("button")
+    ) {
       return;
     }
     e.preventDefault();
@@ -91,8 +61,8 @@ export const DraggableItem: React.FC<DraggableItemProps> = ({
       onMouseLeave={() => setIsHovered(false)}
       className="relative group touch-none"
     >
-      {renderItem()}
-      {isHovered && (
+      {children}
+      {isEditable && isHovered && (
         <Button
           variant="ghost"
           size="icon"
@@ -106,6 +76,5 @@ export const DraggableItem: React.FC<DraggableItemProps> = ({
         </Button>
       )}
     </div>
-  )
-}
-
+  );
+};

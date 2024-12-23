@@ -1,15 +1,21 @@
-import React from 'react'
-import { Textarea } from "@/components/ui/textarea"
+import { Textarea } from "@/components/ui/textarea";
+import React from "react";
 
 interface LetterNoteProps {
-  content: string
-  onChange: (content: string) => void
-  color: string
+  content: string;
+  onChange: (content: string) => void;
+  color: string;
 }
 
-export const LetterNote: React.FC<LetterNoteProps> = ({ content, onChange, color }) => {
+export const LetterNote: React.FC<LetterNoteProps> = ({
+  content,
+  onChange,
+  color,
+}) => {
   return (
-    <div className={`${color} p-4 shadow-lg border border-stone-300 transition-all duration-300 ease-in-out hover:shadow-2xl rounded-md w-48 z-10`}>
+    <div
+      className={`${color} p-4 shadow-lg border border-stone-300 transition-all duration-300 ease-in-out hover:shadow-2xl rounded-md w-48 z-10`}
+    >
       <Textarea
         value={content}
         onChange={(e) => onChange(e.target.value)}
@@ -18,6 +24,5 @@ export const LetterNote: React.FC<LetterNoteProps> = ({ content, onChange, color
         onMouseDown={(e) => e.stopPropagation()}
       />
     </div>
-  )
-}
-
+  );
+};
