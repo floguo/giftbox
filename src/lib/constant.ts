@@ -1,9 +1,9 @@
-export const DEFAULT_LETTER_MESSAGE = `I hope this letter finds you well. I wanted to share something special with you.
+export const DEFAULT_LETTER_MESSAGE = `Hope life's been buzzin'! Just wanted to share something special with you – a little throwback to our fav memories together (iykyk).
 
-Here are some memories we shared together. Whether we are in person, or separated by thousands of miles, I just want you to know that I am thinking of you.
+Whether we’re vibing IRL or miles apart, just know you’re always on my mind. 
 
-Miss you,`;
+Miss you loads,`;
 
 export const DEFAULT_LETTER_SIGNATURE = "Your friend";
 
-export const DEFAULT_LETTER_TO = "my friend";
+export const DEFAULT_LETTER_TO = "Hey Bestie";
