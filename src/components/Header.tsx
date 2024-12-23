@@ -14,7 +14,7 @@ export const Header = () => {
         size="sm"
         onClick={() => {
           const id = createId();
-          router.push(`/${id}?letterShown=true`);
+          router.push(`/${id}`);
         }}
       >
         +
