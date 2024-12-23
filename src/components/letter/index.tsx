@@ -3,6 +3,7 @@
 import {
   DEFAULT_LETTER_MESSAGE,
   DEFAULT_LETTER_SIGNATURE,
+  DEFAULT_LETTER_TO,
 } from "@/lib/constant";
 import { useEffect, useRef, useState } from "react";
 import { useClickAway } from "react-use";
@@ -37,7 +38,7 @@ export default function Letter() {
             <div className={`${styles.front} ${styles.pocket}`}></div>
             <div className={styles.letter}>
               <div className={styles.letter_content}>
-                <p>Dear {letter.to ?? "my friend"},</p>
+                <p>{letter.to ?? DEFAULT_LETTER_TO},</p>
                 <br />
                 <p className="whitespace-pre-wrap">
                   {letter.message != null || letter.message != ""
