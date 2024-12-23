@@ -15,10 +15,10 @@ import { Check, Copy } from "lucide-react";
 import { useState } from "react";
 
 export default function Share() {
-  const { saveCanvas, isEditable } = useAppContext();
+  const { saveCanvas } = useAppContext();
   const [toName, setToName] = useState("");
   const [fromName, setFromName] = useState("");
-  const [_isEditable, setIsEditable] = useState(isEditable);
+  const [_isEditable, setIsEditable] = useState(false);
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
