@@ -9,7 +9,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { useLocalStorage } from "react-use";
 
 export default function MainContent({
   id,
@@ -23,20 +22,14 @@ export default function MainContent({
   letterShown: boolean;
 }) {
   const queryClient = new QueryClient();
-  const [isLetterShowed, setIsLetterShowed, removeIsLetterShowed] =
-    useLocalStorage(`${id}_letter_showed`, letterShown);
 
   return (
     <QueryClientProvider client={queryClient}>
       <AppContextProvider
         giftId={id}
         restoredState={restoredState}
-        useLocalStorage={{
-          isLetterShowed,
-          setIsLetterShowed,
-          removeIsLetterShowed,
-        }}
         isEditable={isEditable}
+        letterShown={letterShown}
       >
         <DndProvider backend={HTML5Backend}>
           <Main isEditable={isEditable} />
@@ -60,7 +53,7 @@ const Main = ({ isEditable }: { isEditable: boolean }) => {
   }
 
   return (
-    <div className="relative w-full h-full overflow-hidden">
+    <div className="relative w-screen h-screen overflow-hidden">
       <Header />
       {!isLetterShowed && <Letter />}
       <DigitalLetterComposer isEditable={isEditable} />

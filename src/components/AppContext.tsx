@@ -9,7 +9,7 @@ import {
 import { LetterItem } from "@/lib/type";
 import { useMutation } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext, useState } from "react";
-import { useDebounce } from "react-use";
+import { useDebounce, useLocalStorage } from "react-use";
 
 type ContextValue = ReturnType<typeof useInternalGetAppContext>;
 
@@ -27,24 +27,20 @@ export const AppContextProvider = ({
   children,
   giftId,
   restoredState,
-  useLocalStorage,
   isEditable,
+  letterShown,
 }: {
   children: ReactNode;
   giftId: string;
   restoredState: savedState | null;
-  useLocalStorage: {
-    isLetterShowed: boolean | undefined;
-    setIsLetterShowed: (value: boolean) => void;
-    removeIsLetterShowed: () => void;
-  };
   isEditable: boolean;
+  letterShown: boolean;
 }) => {
   const value = useInternalGetAppContext(
     giftId,
     restoredState,
-    useLocalStorage,
-    isEditable
+    isEditable,
+    letterShown
   );
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
@@ -52,12 +48,8 @@ export const AppContextProvider = ({
 function useInternalGetAppContext(
   giftId: string,
   restoredState: savedState | null,
-  useLocalStorage: {
-    isLetterShowed: boolean | undefined;
-    setIsLetterShowed: (value: boolean) => void;
-    removeIsLetterShowed: () => void;
-  },
-  isEditable: boolean
+  isEditable: boolean,
+  letterShown: boolean
 ) {
   const [items, setItems] = useState<LetterItem[]>(restoredState?.items ?? []);
   const [letter, setLetter] = useState(
@@ -67,6 +59,9 @@ function useInternalGetAppContext(
       message: DEFAULT_LETTER_MESSAGE,
     }
   );
+
+  const [isLetterShowed, setIsLetterShowed, removeIsLetterShowed] =
+    useLocalStorage(`${giftId}_letter_showed`, letterShown);
 
   const saveCanvas = useMutation({
     mutationFn: async (newState: Partial<savedState>) => {
@@ -98,9 +93,9 @@ function useInternalGetAppContext(
     setLetter,
     giftId,
     saveCanvas,
-    isLetterShowed: useLocalStorage.isLetterShowed,
-    setIsLetterShowed: useLocalStorage.setIsLetterShowed,
-    removeIsLetterShowed: useLocalStorage.removeIsLetterShowed,
+    isLetterShowed,
+    setIsLetterShowed,
+    removeIsLetterShowed,
     isEditable,
   } as const;
 

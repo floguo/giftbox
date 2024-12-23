@@ -1,9 +1,16 @@
-import { createId } from "@paralleldrive/cuid2";
-import { redirect } from "next/navigation";
+"use client";
 
-export default async function LandingPage() {
-  // Generate a new CUID
-  const id = createId();
-  // Redirect to the new page
-  redirect(`/${id}`);
+import { generateNewId } from "@/lib/utils";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+
+export default function LandingPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const id = generateNewId();
+    router.push(`/${id}`);
+  }, []);
+
+  return <></>;
 }

@@ -98,7 +98,7 @@ export default function Share() {
             </DialogHeader>
             <div className="grid gap-4 py-4 pb-0">
               <div className="grid gap-2">
-                <Label htmlFor="to">To</Label>
+                <Label htmlFor="to">Greeting</Label>
                 <Input
                   id="to"
                   value={toName}
@@ -107,7 +107,7 @@ export default function Share() {
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="from">From</Label>
+                <Label htmlFor="from">Signature</Label>
                 <Input
                   id="from"
                   value={fromName}
