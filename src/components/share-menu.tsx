@@ -92,7 +92,7 @@ export default function Share() {
           <Button size="sm">Share</Button>
         </DialogTrigger>
         <DialogPortal>
-          <DialogContent>
+          <DialogContent className="max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Share your gift</DialogTitle>
             </DialogHeader>
@@ -107,6 +107,15 @@ export default function Share() {
                 />
               </div>
               <div className="grid gap-2">
+                <Label htmlFor="from">From</Label>
+                <Input
+                  id="from"
+                  value={fromName}
+                  onChange={(e) => setFromName(e.target.value)}
+                  placeholder="Your name"
+                />
+              </div>
+              <div className="grid gap-2">
                 <Label htmlFor="message">Message</Label>
                 <Textarea
                   id="message"
@@ -114,15 +123,6 @@ export default function Share() {
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="Write your message..."
                   className="min-h-[200px] resize-none"
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="from">From</Label>
-                <Input
-                  id="from"
-                  value={fromName}
-                  onChange={(e) => setFromName(e.target.value)}
-                  placeholder="Your name"
                 />
               </div>
               <div className="flex items-center justify-between">

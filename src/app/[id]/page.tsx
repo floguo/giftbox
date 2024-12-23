@@ -1,6 +1,33 @@
 import { getCanvasState } from "@/lib/action";
 import InnerComponent from "./InnerComponent";
 
+export async function generateMetadata({ params }: { params: { id: string } }) {
+  const baseUrl = `https://friendsgift.ing`;
+  const session = await getCanvasState(params.id);
+
+  const customTitle = session?.letter?.from
+    ? `${session.letter.from} has a gift for you!`
+    : "Your friend has a gift for you!";
+
+  return {
+    title: "Friendsgifting",
+    description: customTitle,
+    openGraph: {
+      title: `Friendsgifting`,
+      description: customTitle,
+      url: `${baseUrl}/${params.id}`,
+      type: "website",
+      images: [`${baseUrl}/api/og?title=${encodeURIComponent(customTitle)}`],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `Friendsgifting`,
+      description: customTitle,
+      images: [`${baseUrl}/api/og?title=${encodeURIComponent(customTitle)}`],
+    },
+  };
+}
+
 export default async function Page({
   params,
   searchParams,
