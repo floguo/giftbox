@@ -1,18 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useClickAway } from "react-use";
 import { useAppContext } from "../AppContext";
 import styles from "./letter.module.css";
 
 export default function Letter({ to, from }: { to: string; from: string }) {
   const { setIsLetterShowed } = useAppContext();
   const [isOpen, setIsOpen] = useState(false);
+  const envelopeRef = useRef(null);
 
   useEffect(() => {
     setTimeout(() => {
       setIsOpen(true);
     }, 800);
   }, []);
+
+  useClickAway(envelopeRef, () => {
+    setIsLetterShowed(true);
+  });
 
   return (
     <div className="relative inset-0 z-[100]">
@@ -21,6 +27,7 @@ export default function Letter({ to, from }: { to: string; from: string }) {
           <div
             id={styles.envelope}
             className={isOpen ? styles.open : styles.close}
+            ref={envelopeRef}
           >
             <div className={`${styles.front} ${styles.flap}`}></div>
             <div className={`${styles.front} ${styles.pocket}`}></div>

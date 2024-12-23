@@ -2,6 +2,7 @@
 
 import { AppContextProvider, useAppContext } from "@/components/AppContext";
 import DigitalLetterComposer from "@/components/composer";
+import { Header } from "@/components/Header";
 import Letter from "@/components/letter";
 import { LetterItem } from "@/lib/type";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -71,7 +72,8 @@ const Main = ({
   }
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-full overflow-hidden">
+      <Header />
       {!isLetterShowed && <Letter to={to} from={from} />}
       <DigitalLetterComposer isEditable={isEditable} />
     </div>
