@@ -22,6 +22,8 @@ export interface LetterItem {
   scale?: number
   color?: string
   caption?: string
+  offsetX?: number
+  offsetY?: number
 }
 
 export default function DigitalLetterComposer() {
@@ -80,8 +82,8 @@ export default function DigitalLetterComposer() {
 
     const position = 'touches' in e ? e.touches[0] : e
     const rect = canvasRef.current.getBoundingClientRect()
-    const x = position.clientX - rect.left - (currentItem as any).offsetX
-    const y = position.clientY - rect.top - (currentItem as any).offsetY
+    const x = position.clientX - rect.left - (currentItem?.offsetX ?? 0)
+    const y = position.clientY - rect.top - (currentItem?.offsetY ?? 0)
 
     updateItemPosition(currentItem.id, { x, y })
   }
@@ -165,7 +167,7 @@ export default function DigitalLetterComposer() {
       link.click()
     }
   }
-
+    
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="h-screen overflow-hidden bg-stone-200 flex flex-col relative">

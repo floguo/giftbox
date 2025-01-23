@@ -1,6 +1,12 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { Play, Pause } from 'lucide-react'
 
+declare global {
+  interface Window {
+    webkitAudioContext?: typeof AudioContext; // Add legacy webkitAudioContext
+  }
+}
+
 interface VoiceNoteProps {
   audioBlob: Blob
 }
@@ -17,7 +23,7 @@ export const VoiceNote: React.FC<VoiceNoteProps> = ({ audioBlob }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
-    const context = new (window.AudioContext || (window as any).webkitAudioContext)()
+    const context = new (window.AudioContext || (window).webkitAudioContext)()
     setAudioContext(context)
 
     const reader = new FileReader()
