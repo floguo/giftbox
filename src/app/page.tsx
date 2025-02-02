@@ -198,4 +198,3 @@ export default function DigitalLetterComposer() {
     </DndProvider>
   )
 }
-
