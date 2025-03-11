@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { Toolbar } from '@/components/toolbar'
@@ -22,6 +22,7 @@ export interface LetterItem {
   caption?: string
   offsetX?: number
   offsetY?: number
+  zIndex?: number
 }
 
 export default function DigitalLetterComposer() {
@@ -32,10 +33,101 @@ export default function DigitalLetterComposer() {
   const [isDragging, setIsDragging] = useState(false)
   const [currentItem, setCurrentItem] = useState<LetterItem | null>(null)
   const canvasRef = useRef<HTMLDivElement>(null)
+  const getRandomPosition = () => {
+    return { 
+      x: Math.floor(Math.random() * 200), 
+      y: Math.floor(Math.random() * 200) 
+    }
+  }
+  
+  const getRandomRotation = () => {
+    return Math.floor((Math.random() - 0.5) * 10)
+  }
+
+  const normalizeZIndices = () => {
+    setItems(prevItems => {
+      
+      const sortedItems = [...prevItems].sort((a, b) => 
+        (a.zIndex || 0) - (b.zIndex || 0)
+      );
+      
+      return sortedItems.map((item, index) => ({
+        ...item,
+        zIndex: index + 1
+      }));
+    });
+  };
+
+  const moveItemForward = (id: string) => {
+    setItems(prevItems => {
+      
+      const sortedItems = [...prevItems].sort((a, b) => 
+        (a.zIndex || 0) - (b.zIndex || 0)
+      );
+      
+      const itemIndex = sortedItems.findIndex(item => item.id === id);
+      if (itemIndex === -1 || itemIndex === sortedItems.length - 1) {
+        return prevItems; 
+      }
+      
+      const nextItem = sortedItems[itemIndex + 1];
+      const currentItemZIndex = sortedItems[itemIndex].zIndex || 0;
+      const nextItemZIndex = nextItem.zIndex || 0;
+      
+      return prevItems.map(item => {
+        if (item.id === id) {
+          return { ...item, zIndex: nextItemZIndex };
+        } else if (item.id === nextItem.id) {
+          return { ...item, zIndex: currentItemZIndex };
+        }
+        return item;
+      });
+    });
+  };
+  
+  const moveItemBackward = (id: string) => {
+    setItems(prevItems => {
+      
+      const sortedItems = [...prevItems].sort((a, b) => 
+        (a.zIndex || 0) - (b.zIndex || 0)
+      );
+      
+      const itemIndex = sortedItems.findIndex(item => item.id === id);
+      if (itemIndex <= 0) {
+        return prevItems; 
+      }
+      
+      const prevItem = sortedItems[itemIndex - 1];
+      const currentItemZIndex = sortedItems[itemIndex].zIndex || 0;
+      const prevItemZIndex = prevItem.zIndex || 0;
+      
+      return prevItems.map(item => {
+        if (item.id === id) {
+          return { ...item, zIndex: prevItemZIndex };
+        } else if (item.id === prevItem.id) {
+          return { ...item, zIndex: currentItemZIndex };
+        }
+        return item;
+      });
+    });
+  };
+  useEffect(() => {
+    normalizeZIndices();
+  }, []);
 
   const addItem = (item: LetterItem) => {
-    setItems((prevItems) => [...prevItems, item])
-  }
+    setItems((prevItems) => {
+      
+      const highestZIndex = prevItems.length > 0 
+        ? Math.max(...prevItems.map(item => item.zIndex || 0)) 
+        : 0;
+      
+      return [...prevItems, {
+        ...item,
+        zIndex: highestZIndex + 1
+      }];
+    });
+  };
 
   const updateItemPosition = (id: string, position: { x: number; y: number }) => {
     setItems((prevItems) =>
@@ -96,9 +188,9 @@ export default function DigitalLetterComposer() {
       id: Date.now().toString(),
       type: 'note',
       content: '',
-      position: { x: Math.random() * 200, y: Math.random() * 200 },
-      rotation: (Math.random() - 0.5) * 10,
-      color: color // Ensure the color is being set correctly
+      position: getRandomPosition(),
+      rotation: getRandomRotation(),
+      color: color
     })
   }
 
@@ -107,8 +199,8 @@ export default function DigitalLetterComposer() {
       id: Date.now().toString(),
       type: 'spotify',
       content: spotifyUrl,
-      position: { x: Math.random() * 200, y: Math.random() * 200 },
-      rotation: (Math.random() - 0.5) * 10
+      position: getRandomPosition(),
+      rotation: getRandomRotation()
     })
   }
 
@@ -117,8 +209,8 @@ export default function DigitalLetterComposer() {
       id: Date.now().toString(),
       type: 'doodle',
       content: doodleUrl,
-      position: { x: Math.random() * 200, y: Math.random() * 200 },
-      rotation: (Math.random() - 0.5) * 10
+      position: getRandomPosition(),
+      rotation: getRandomRotation()
     })
   }
 
@@ -143,6 +235,8 @@ export default function DigitalLetterComposer() {
             handleDragStart={handleDragStart}
             isDragging={isDragging}
             currentItem={currentItem}
+            moveItemForward={moveItemForward}
+            moveItemBackward={moveItemBackward}
           />
         </main>
         <div className="absolute bottom-0 left-0 right-0 z-30">
@@ -162,8 +256,8 @@ export default function DigitalLetterComposer() {
                 id: Date.now().toString(),
                 type: 'photo',
                 content: photoUrl,
-                position: { x: Math.random() * 200, y: Math.random() * 200 },
-                rotation: (Math.random() - 0.5) * 10,
+                position: getRandomPosition(),
+                rotation: getRandomRotation(),
                 caption: ''
               })
               setIsPhotoUploaderOpen(false)
@@ -178,8 +272,8 @@ export default function DigitalLetterComposer() {
                 id: Date.now().toString(),
                 type: 'voice',
                 content: audioBlob,
-                position: { x: Math.random() * 200, y: Math.random() * 200 },
-                rotation: (Math.random() - 0.5) * 10
+                position: getRandomPosition(),
+                rotation: getRandomRotation()
               })
               setIsVoiceRecorderOpen(false)
             }}

@@ -14,6 +14,8 @@ interface LetterCanvasProps {
   handleDragStart: (e: React.MouseEvent | React.TouchEvent, item: LetterItem) => void
   isDragging: boolean
   currentItem: LetterItem | null
+  moveItemForward: (id: string) => void
+  moveItemBackward: (id: string) => void
 }
 
 export const LetterCanvas: React.FC<LetterCanvasProps> = ({ 
@@ -22,7 +24,9 @@ export const LetterCanvas: React.FC<LetterCanvasProps> = ({
   deleteItem, 
   handleDragStart,
   isDragging,
-  currentItem
+  currentItem,
+  moveItemForward,
+  moveItemBackward
 }) => {
   const renderItem = (item: LetterItem) => {
     switch (item.type) {
@@ -55,6 +59,8 @@ export const LetterCanvas: React.FC<LetterCanvasProps> = ({
           handleDragStart={handleDragStart}
           isDragging={isDragging && currentItem?.id === item.id}
           updateItemContent={updateItemContent}
+          moveForward={() => moveItemForward(item.id)}
+          moveBackward={() => moveItemBackward(item.id)}
         >
           {renderItem(item)}
         </DraggableItem>

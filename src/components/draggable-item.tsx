@@ -4,7 +4,7 @@ import { PhotoItem } from '@/components/photo-item'
 import { LetterNote } from '@/components/letter-note'
 import { VoiceNote } from '@/components/voice-note'
 import { Button } from "@/components/ui/button"
-import { X } from 'lucide-react'
+import { X, ArrowUp, ArrowDown } from 'lucide-react'
 import { SpotifyPlayer } from '@/components/spotify-player';
 
 interface DraggableItemProps {
@@ -13,6 +13,8 @@ interface DraggableItemProps {
   handleDragStart: (e: React.MouseEvent | React.TouchEvent, item: LetterItem) => void
   isDragging: boolean
   updateItemContent: (id: string, content: string, field?: string) => void
+  moveForward: () => void
+  moveBackward: () => void
   children: React.ReactNode
 }
 
@@ -21,7 +23,9 @@ export const DraggableItem: React.FC<DraggableItemProps> = ({
   onDelete, 
   handleDragStart, 
   isDragging,
-  updateItemContent
+  updateItemContent,
+  moveForward,
+  moveBackward
 }) => {
   const [isHovered, setIsHovered] = useState(false)
 
@@ -37,6 +41,7 @@ export const DraggableItem: React.FC<DraggableItemProps> = ({
     WebkitUserSelect: 'none',
     MozUserSelect: 'none',
     msUserSelect: 'none',
+    zIndex: item.zIndex || 1
   }
 
   const renderItem = () => {
@@ -93,17 +98,41 @@ export const DraggableItem: React.FC<DraggableItemProps> = ({
     >
       {renderItem()}
       {isHovered && (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity p-1 h-6 w-6 hover:bg-red-600 z-50"
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete();
-          }}
-        >
-          <X className="h-3 w-3 text-white" />
-        </Button>
+        <div className="absolute -top-1 -right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-50">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="bg-blue-500 text-white rounded-full p-1 h-6 w-6 hover:bg-blue-600"
+            onClick={(e) => {
+              e.stopPropagation();
+              moveForward();
+            }}
+          >
+            <ArrowUp className="h-3 w-3 text-white" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="bg-blue-500 text-white rounded-full p-1 h-6 w-6 hover:bg-blue-600"
+            onClick={(e) => {
+              e.stopPropagation();
+              moveBackward();
+            }}
+          >
+            <ArrowDown className="h-3 w-3 text-white" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="bg-red-500 text-white rounded-full p-1 h-6 w-6 hover:bg-red-600"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+          >
+            <X className="h-3 w-3 text-white" />
+          </Button>
+        </div>
       )}
     </div>
   )
